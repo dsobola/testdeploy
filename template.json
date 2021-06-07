@@ -1,175 +1,269 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {},
-    "functions": [],
-    "variables": {},
-    "resources": [
-        {
-            "name": "[toLower('latest')]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "windowsVM1 Storage Account"
-            },
-            "sku": {
-                "name": "Standard_LRS"
-            },
-            "kind": "Storage"
+	"parameters":{
+		"networkSecurityGroups_nsg_mc_cac_p_db_client_001_name": {
+            "defaultValue": "nsg-mc-cac-p-db-client-001",
+            "type": "String"
         },
-        {
-            "name": "windowsVM1-PublicIP",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-11-01",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "PublicIPAddress"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[toLower('windowsVM1')]"
-                }
-            }
-        },
-        {
-            "name": "windowsVM1-nsg",
+        "networkSecurityGroups_nsg_mc_cac_p_private_client_001_name": {
+            "defaultValue": "nsg-mc-cac-p-private-client-001",
+            "type": "String"
+        }
+	},
+	"variables":{
+	},
+	"resources":[
+		{
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2018-08-01",
-            "location": "[resourceGroup().location]",
+            "apiVersion": "2020-08-01",
+            "name": "[parameters('networkSecurityGroups_nsg_mc_cac_p_private_client_001_name')]",
+            "location": "canadacentral",
+            "tags": {
+                "Name": "nsg-mc-cac-h-private-client-001",
+                "Owner": "smodh@deloitte.ca"
+            },
             "properties": {
                 "securityRules": [
                     {
-                        "name": "nsgRule1",
+                        "name": "AD_Authentication",
                         "properties": {
-                            "description": "description",
-                            "protocol": "Tcp",
+                            "protocol": "TCP",
                             "sourcePortRange": "*",
-                            "destinationPortRange": "3389",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.4.0/24",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [
+                                "25",
+                                "389",
+                                "636",
+                                "3268",
+                                "3269",
+                                "88",
+                                "445",
+                                "464",
+                                "139",
+                                "135",
+                                "5722",
+                                "9389",
+                                "49152-65535"
+                            ],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AD_Authentication_UDP",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.4.0/24",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [
+                                "123",
+                                "389",
+                                "88",
+                                "445",
+                                "464",
+                                "137",
+                                "138",
+                                "49152-65535"
+                            ],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DNS",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "53",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.4.0/24",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "NTP",
+                        "properties": {
+                            "protocol": "UDP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "123",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.4.0/24",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.4.0/24",
                             "access": "Allow",
                             "priority": 100,
-                            "direction": "Inbound"
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
                         }
                     }
                 ]
             }
         },
-        {
-            "name": "windowsVM1-VirtualNetwork",
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-11-01",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'windowsVM1-nsg')]"
-            ],
+		{
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-08-01",
+            "name": "[parameters('networkSecurityGroups_nsg_mc_cac_p_db_client_001_name')]",
+            "location": "canadacentral",
             "tags": {
-                "displayName": "windowsVM1-VirtualNetwork"
+                "Name": "nsg-mc-cac-h-private-client-001",
+                "Owner": "smodh@deloitte.ca"
             },
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "10.0.0.0/16"
-                    ]
-                },
-                "subnets": [
+                "securityRules": [
                     {
-                        "name": "windowsVM1-VirtualNetwork-Subnet",
+                        "name": "AD_Authentication",
                         "properties": {
-                            "addressPrefix": "10.0.0.0/24",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'windowsVM1-nsg')]"
-                            }
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.5.0/24",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [
+                                "25",
+                                "389",
+                                "636",
+                                "3268",
+                                "3269",
+                                "88",
+                                "445",
+                                "464",
+                                "139",
+                                "135",
+                                "5722",
+                                "9389",
+                                "49152-65535"
+                            ],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
                         }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "windowsVM1-NetworkInterface",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2019-11-01",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'windowsVM1-PublicIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks', 'windowsVM1-VirtualNetwork')]"
-            ],
-            "tags": {
-                "displayName": "windowsVM1 Network Interface"
-            },
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipConfig1",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'windowsVM1-PublicIP')]"
-                            },
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'windowsVM1-VirtualNetwork', 'windowsVM1-VirtualNetwork-Subnet')]"
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "windowsVM1",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2019-07-01",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', toLower('latest'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', 'windowsVM1-NetworkInterface')]"
-            ],
-            "tags": {
-                "displayName": "windowsVM1"
-            },
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_A2_v2"
-                },
-                "osProfile": {
-                    "computerName": "windowsVM1",
-                    "adminUsername": "adminUsername",
-                    "adminPassword": "adminPassword"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "2012-R2-Datacenter",
-                        "version": "latest"
                     },
-                    "osDisk": {
-                        "name": "windowsVM1OSDisk",
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'windowsVM1-NetworkInterface')]"
+                    {
+                        "name": "AD_Authentication_UDP",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.5.0/24",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [
+                                "123",
+                                "389",
+                                "88",
+                                "445",
+                                "464",
+                                "137",
+                                "138",
+                                "49152-65535"
+                            ],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
                         }
-                    ]
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true,
-                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('latest'))).primaryEndpoints.blob]"
+                    },
+                    {
+                        "name": "DNS",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "53",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.5.0/24",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "NTP",
+                        "properties": {
+                            "protocol": "UDP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "123",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.5.0/24",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "172.18.0.0/26",
+                            "destinationAddressPrefix": "10.21.5.0/24",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
                     }
-                }
+                ]
             }
-        }
-    ],
-    "outputs": {
-        "storageEndpoint": {
-            "type": "object",
-            "value": "[reference(toLower('latest')).primaryEndpoints]"
-        }
-    }
+        }    
+	],
+	"outputs":{
+		"networkSecurityGroups_nsg_mc_cac_p_private_client_001_linkedname": {
+			"type": "string",
+			"value": "[parameters('networkSecurityGroups_nsg_mc_cac_p_private_client_001_name')]"
+		},
+		"networkSecurityGroups_nsg_mc_cac_p_db_client_001_linkedname": {
+			"type": "string",
+			"value": "[parameters('networkSecurityGroups_nsg_mc_cac_p_db_client_001_name')]"
+		}
+	}
 }
+	
