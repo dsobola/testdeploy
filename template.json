@@ -6,7 +6,7 @@
     "variables": {},
     "resources": [
         {
-            "name": "[toLower('windowsVM1storage')]",
+            "name": "[toLower('latest')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
@@ -122,7 +122,7 @@
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', toLower('windowsVM1storage'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', toLower('latest'))]",
                 "[resourceId('Microsoft.Network/networkInterfaces', 'windowsVM1-NetworkInterface')]"
             ],
             "tags": {
@@ -160,7 +160,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('windowsVM1storage'))).primaryEndpoints.blob]"
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('latest'))).primaryEndpoints.blob]"
                     }
                 }
             }
@@ -169,7 +169,7 @@
     "outputs": {
         "storageEndpoint": {
             "type": "object",
-            "value": "[reference(toLower('windowsVM1storage')).primaryEndpoints]"
+            "value": "[reference(toLower('latest')).primaryEndpoints]"
         }
     }
 }
