@@ -243,9 +243,7 @@
                 "privateIPAddressVersion": "IPv4",
                 "privateIPAddress": "192.170.2.6",
               "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPName'))]"
-              },
+            
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }
