@@ -24,7 +24,7 @@
     },
     "publicIpName": {
       "type": "string",
-      "defaultValue": "myPublicIP",
+      "defaultValue": "latest-ip",
       "metadata": {
         "description": "Name for the Public IP used to access the Virtual Machine."
       }
@@ -98,14 +98,14 @@
     }
   },
   "variables": {
-    "storageAccountName": "[concat('bootdiags', uniquestring(resourceGroup().id))]",
-    "nicName": "myVMNic",
+    "storageAccountName": "[concat('azmccan', uniquestring(resourceGroup().id))]",
+    "nicName": "latest263",
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
-    "virtualNetworkName": "MyVNET",
+    "virtualNetworkName": "VNet-002",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "networkSecurityGroupName": "default-NSG"
+    "networkSecurityGroupName": "WEM-MgntSG"
   },
   "resources": [
     {
@@ -116,8 +116,42 @@
       "sku": {
         "name": "Standard_LRS"
       },
-      "kind": "Storage",
-      "properties": {}
+      "tags": 
+        {
+            "BILLINGCODE": "DEL10885-01-01-01-1000",
+            "BUSINESSOWNERS": "EngagementManager : dsobola@deloitte.ca, LeadArchitect : samshaikh@deloitte.ca, BusinessOwner : samshaikh@deloitte.ca",
+            "CLIENT": "WEMS",
+            "COUNTRY": "CA",
+            "CS": "PUBLIC",
+            "ENVIRONMENT": "PROD",
+            "FUNCTION": "Consulting",
+            "MEMBERFIRM": "CA",
+            "OPERATINGGROUP": "MasterCloud"
+        },
+      "kind": "StorageV2",
+      "properties": {
+          "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+      }
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
@@ -142,17 +176,24 @@
       "properties": {
         "securityRules": [
           {
-            "name": "default-allow-3389",
-            "properties": {
-              "priority": 1000,
-              "access": "Allow",
-              "direction": "Inbound",
-              "destinationPortRange": "3389",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*"
-            }
+            "name": "AllowedGPPorts",
+                        "properties": {
+                            "description": "Rule",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 199,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [
+                                "167.219.0.0/16",
+                                "103.76.232.0/22"
+                            ],
+                            "destinationAddressPrefixes": []
+                        }
           }
         ]
       }
