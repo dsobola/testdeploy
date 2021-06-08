@@ -99,7 +99,7 @@
   },
   "variables": {
     "storageAccountName": "[concat('azmccan', uniquestring(resourceGroup().id))]",
-    "nicName": "wem-eth0",
+    "nicName": "azmccannet",
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
